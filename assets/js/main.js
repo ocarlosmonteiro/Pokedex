@@ -1,26 +1,51 @@
-function convertPokemonToLi(Pokemon) 
+const pokemonList= document.getElementById("pokemonList")
+const loadMoreButton = document.getElementById("loadMoreButton")
+const maxRecords = 151
+const limit = 10
+let offset = 0;
+
+
+
+function loadPokemonItens(offset, limit)
 {
-    return `
-        <li class="pokemon">
-            <span class="number">#${Pokemon.number}</span>
-            <span class="name">${Pokemon.name}</span>
-                
-            <div class="detail">
-                <ol class="types">
-                    ${Pokemon.types.map((type) => `<li class="type">${type}</li>`).join('')}
-                </ol>
-                <img src="${Pokemon.photo}" alt=${Pokemon.name}">
-            </div>                
-        </li> `
+//=> representa um função
+    pokeApi.getPokemons(offset, limit).then((pokemons = []) => 
+    {
+        const newHtml = pokemons.map((pokemon) => `
+            <li class="pokemon ${pokemon.type}">
+                <span class="number">#${pokemon.number}</span>
+                <span class="name">${pokemon.name}</span>
+                    
+                <div class="detail">
+                    <ol class="types">
+                        ${pokemon.types.map((type) => `<li class="type ${type}">${type}</li>`).join('')}
+                    </ol>
+                    <img src="${pokemon.photo}" alt=${pokemon.name}">
+                </div>                
+            </li>`
+        ).join('')
+
+        pokemonList.innerHTML += newHtml
+    })
+    
 }
 
-const pokemonList= document.getElementById("pokemonList")
+loadPokemonItens(offset, limit)
 
+loadMoreButton.addEventListener('click', () => {
+    offset += limit
 
-//=> representa um função
+    const quantidadeRecord = offset + limit
 
-pokeApi.getPokemons().then((pokemons = []) => 
-{
-    const newHtml = pokemons.map(convertPokemonToLi).join('')
-    pokemonList.innerHTML = newHtml
+    if(quantidadeRecord >= maxRecords)
+    {
+        const newLimit = maxRecords - offset
+        loadPokemonItens(offset, newLimit)
+
+        loadMoreButton.parentElement.removeChild(loadMoreButton)
+    }
+    else
+    {
+        loadPokemonItens(offset, limit)
+    }
 })
